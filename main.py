@@ -118,6 +118,27 @@ elif dxl_error != 0:
     print("%s" % packetHandler.getRxPacketError(dxl_error))
 else:
     print("Dynamixel has been successfully connected")
+    
+    
+# Read present position
+dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID_1, ADDR_AX_PRESENT_POSITION)
+if dxl_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+elif dxl_error != 0:
+    print("%s" % packetHandler.getRxPacketError(dxl_error))
+
+print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_1, dxl_goal_position[index], dxl_present_position))
+DXL_ID_1_GOAL = dxl_present_position
+
+# dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID_2, ADDR_AX_PRESENT_POSITION)
+# if dxl_comm_result != COMM_SUCCESS:
+#     print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+# elif dxl_error != 0:
+#     print("%s" % packetHandler.getRxPacketError(dxl_error))
+# 
+# print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_2, dxl_goal_position[index], dxl_present_position))
+#DXL_ID_2_GOAL = dxl_present_position
+DXL_ID_2_GOAL = 1023 - DXL_ID_1_GOAL
 
 while 1:
     print("Press any key to continue! (or press ESC to quit!)")
