@@ -54,6 +54,7 @@ ADDR_AX_GOAL_POSITION       = 30
 ADDR_AX_PRESENT_POSITION    = 36
 ADDR_AX_LED                 = 25  #1byte
 ADDR_MOVING_SPEED           = 32   #2byte   0->1023    0=full,  1=very-very-slow  ,100=faster 1023=fastest
+ADDR_TORQUE_LIMIT          = 34    #2byte  0->1023
 
 # Protocol version
 PROTOCOL_VERSION            = 1.0               # See which protocol version is used in the Dynamixel
@@ -76,6 +77,8 @@ DXL_MOVING_STATUS_THRESHOLD = 20                # Dynamixel moving status thresh
 DXL_ID_1_GOAL               = 0
 DXL_ID_2_GOAL               = 1023
 DXL_ID_1_2_SPEED            = 0
+
+DXL_ID_1_TORQUE_LIMIT       = 1023
 
 index = 0
 dxl_goal_position = [DXL_MINIMUM_POSITION_VALUE, DXL_MAXIMUM_POSITION_VALUE]         # Goal position
@@ -139,6 +142,25 @@ DXL_ID_1_GOAL = dxl_present_position
 # print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_2, dxl_goal_position[index], dxl_present_position))
 #DXL_ID_2_GOAL = dxl_present_position
 DXL_ID_2_GOAL = 1023 - DXL_ID_1_GOAL
+
+
+
+# Write torque limit
+dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_1, ADDR_TORQUE_LIMIT, DXL_ID_1_TORQUE_LIMIT)
+if dxl_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+elif dxl_error != 0:
+    print("%s" % packetHandler.getRxPacketError(dxl_error))
+    
+# Write torque limit
+dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_2, ADDR_TORQUE_LIMIT, DXL_ID_1_TORQUE_LIMIT)
+if dxl_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+elif dxl_error != 0:
+    print("%s" % packetHandler.getRxPacketError(dxl_error))
+            
+            
+            
 
 while 1:
     print("Press any key to continue! (or press ESC to quit!)")
