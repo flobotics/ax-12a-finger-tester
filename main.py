@@ -172,7 +172,7 @@ while 1:
         
         if (DXL_ID_1_GOAL + 10) <= 1023:
             DXL_ID_1_GOAL = DXL_ID_1_GOAL + 10
-            DXL_ID_2_GOAL = 1023 - DXL_ID_1_GOAL
+            DXL_ID_2_GOAL = DXL_ID_2_GOAL + 10
         print("%s" % DXL_ID_1_GOAL)
         print("%s" % DXL_ID_2_GOAL)
         
@@ -196,6 +196,30 @@ while 1:
         
         if (DXL_ID_1_GOAL - 10) >= 0:
             DXL_ID_1_GOAL = DXL_ID_1_GOAL - 10
+            DXL_ID_2_GOAL = DXL_ID_2_GOAL - 10
+        print("%s" % DXL_ID_1_GOAL)
+        print("%s" % DXL_ID_2_GOAL)
+        
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_1, ADDR_AX_GOAL_POSITION, DXL_ID_1_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("%s" % packetHandler.getRxPacketError(dxl_error))
+            
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_2, ADDR_AX_GOAL_POSITION, DXL_ID_2_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("%s" % packetHandler.getRxPacketError(dxl_error))
+        
+        
+    elif keychar == 'a':
+        print('found a----------servo1-2 up')
+        
+        if (DXL_ID_1_GOAL + 10) <= 1023:
+            DXL_ID_1_GOAL = DXL_ID_1_GOAL + 10
             DXL_ID_2_GOAL = 1023 - DXL_ID_1_GOAL
         print("%s" % DXL_ID_1_GOAL)
         print("%s" % DXL_ID_2_GOAL)
@@ -214,11 +238,28 @@ while 1:
         elif dxl_error != 0:
             print("%s" % packetHandler.getRxPacketError(dxl_error))
         
-    elif keychar == 'a':
-        print('found a----------servo1-2 up')
-        
     elif keychar == 's':
-        print('found s----------servo1-2 down')  
+        print('found s----------servo1-2 down')
+        
+        if (DXL_ID_1_GOAL - 10) >= 0:
+            DXL_ID_1_GOAL = DXL_ID_1_GOAL - 10
+            DXL_ID_2_GOAL = 1023 - DXL_ID_1_GOAL
+        print("%s" % DXL_ID_1_GOAL)
+        print("%s" % DXL_ID_2_GOAL)
+        
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_1, ADDR_AX_GOAL_POSITION, DXL_ID_1_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("%s" % packetHandler.getRxPacketError(dxl_error))
+            
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_2, ADDR_AX_GOAL_POSITION, DXL_ID_2_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("%s" % packetHandler.getRxPacketError(dxl_error))
         
     elif keychar == 'y':
         print('found y----------servo1-2  speed up')  
