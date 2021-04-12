@@ -67,12 +67,35 @@ def check_moving_limits(key, stepsize, DXL_ID_1_GOAL, DXL_ID_2_GOAL):
     elif keychar == 'e':
         if ((DXL_ID_3_GOAL + stepsize) <= DXL_ID_3_GOAL_MAX) and ((DXL_ID_4_GOAL + stepsize) <= DXL_ID_4_GOAL_MAX):
             return True
-#                 DXL_ID_1_GOAL = DXL_ID_1_GOAL + 10
-#                 DXL_ID_2_GOAL = DXL_ID_2_GOAL + 10
         else:
             return False
+        
     elif keychar == 'r':
         if ((DXL_ID_3_GOAL - stepsize) >= DXL_ID_3_GOAL_MIN) and ((DXL_ID_4_GOAL - stepsize) >= DXL_ID_4_GOAL_MIN):
+            return True
+        else:
+            return False
+        
+    elif keychar == 't':
+        if ((DXL_ID_5_GOAL + stepsize) <= DXL_ID_5_GOAL_MAX) and ((DXL_ID_6_GOAL + stepsize) <= DXL_ID_6_GOAL_MAX):
+            return True
+        else:
+            return False
+        
+    elif keychar == 'z':
+        if ((DXL_ID_5_GOAL - stepsize) >= DXL_ID_5_GOAL_MIN) and ((DXL_ID_6_GOAL - stepsize) >= DXL_ID_6_GOAL_MIN):
+            return True
+        else:
+            return False
+        
+    elif keychar == 'u':
+        if ((DXL_ID_7_GOAL + stepsize) <= DXL_ID_7_GOAL_MAX) and ((DXL_ID_8_GOAL + stepsize) <= DXL_ID_8_GOAL_MAX):
+            return True
+        else:
+            return False
+        
+    elif keychar == 'i':
+        if ((DXL_ID_7_GOAL - stepsize) >= DXL_ID_7_GOAL_MIN) and ((DXL_ID_8_GOAL - stepsize) >= DXL_ID_8_GOAL_MIN):
             return True
         else:
             return False
@@ -95,6 +118,10 @@ DXL_ID_1                      = 7                 # Dynamixel ID : 1
 DXL_ID_2                      = 8                 # Dynamixel ID : 1
 DXL_ID_3                      = 5                 # Dynamixel ID : 1
 DXL_ID_4                      = 6                 # Dynamixel ID : 1
+DXL_ID_5                      = 3                 # Dynamixel ID : 1
+DXL_ID_6                      = 4                 # Dynamixel ID : 1
+DXL_ID_7                      = 1                 # Dynamixel ID : 1
+DXL_ID_8                      = 2                 # Dynamixel ID : 1
 BAUDRATE                    = 1000000             # Dynamixel default baudrate : 57600
 DEVICENAME                  = '/dev/ttyUSB0'    # Check which port is being used on your controller
                                                 # ex) Windows: "COM1"   Linux: "/dev/ttyUSB0" Mac: "/dev/tty.usbserial-*"
@@ -119,6 +146,22 @@ DXL_ID_4_GOAL               = 1023
 DXL_ID_4_GOAL_MIN           = 0
 DXL_ID_4_GOAL_MAX           = 1023  #775
 DXL_ID_3_4_SPEED            = 0
+
+DXL_ID_5_GOAL               = 0
+DXL_ID_5_GOAL_MIN           = 0  #248
+DXL_ID_5_GOAL_MAX           = 1023
+DXL_ID_6_GOAL               = 1023
+DXL_ID_6_GOAL_MIN           = 0
+DXL_ID_6_GOAL_MAX           = 1023  #775
+DXL_ID_5_6_SPEED            = 0
+
+DXL_ID_7_GOAL               = 0
+DXL_ID_7_GOAL_MIN           = 0  #248
+DXL_ID_7_GOAL_MAX           = 1023
+DXL_ID_8_GOAL               = 1023
+DXL_ID_8_GOAL_MIN           = 0
+DXL_ID_8_GOAL_MAX           = 1023  #775
+DXL_ID_7_8_SPEED            = 0
 
 DXL_ID_1_TORQUE_LIMIT       = 1023
 
@@ -194,7 +237,7 @@ if dxl_comm_result != COMM_SUCCESS:
 elif dxl_error != 0:
     print("%s" % packetHandler.getRxPacketError(dxl_error))
 
-print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_1, dxl_goal_position[index], dxl_present_position))
+print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_3, dxl_goal_position[index], dxl_present_position))
 DXL_ID_3_GOAL = dxl_present_position
 
 dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID_4, ADDR_AX_PRESENT_POSITION)
@@ -203,9 +246,50 @@ if dxl_comm_result != COMM_SUCCESS:
 elif dxl_error != 0:
     print("%s" % packetHandler.getRxPacketError(dxl_error))
 
-print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_2, dxl_goal_position[index], dxl_present_position))
+print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_4, dxl_goal_position[index], dxl_present_position))
 DXL_ID_4_GOAL = dxl_present_position
 # DXL_ID_2_GOAL = 1023 - DXL_ID_1_GOAL
+
+# Read present position
+dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID_5, ADDR_AX_PRESENT_POSITION)
+if dxl_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+elif dxl_error != 0:
+    print("%s" % packetHandler.getRxPacketError(dxl_error))
+
+print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_5, dxl_goal_position[index], dxl_present_position))
+DXL_ID_5_GOAL = dxl_present_position
+
+dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID_6, ADDR_AX_PRESENT_POSITION)
+if dxl_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+elif dxl_error != 0:
+    print("%s" % packetHandler.getRxPacketError(dxl_error))
+
+print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_6, dxl_goal_position[index], dxl_present_position))
+DXL_ID_6_GOAL = dxl_present_position
+
+
+# Read present position
+dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID_7, ADDR_AX_PRESENT_POSITION)
+if dxl_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+elif dxl_error != 0:
+    print("%s" % packetHandler.getRxPacketError(dxl_error))
+
+print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_7, dxl_goal_position[index], dxl_present_position))
+DXL_ID_7_GOAL = dxl_present_position
+
+dxl_present_position, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID_8, ADDR_AX_PRESENT_POSITION)
+if dxl_comm_result != COMM_SUCCESS:
+    print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+elif dxl_error != 0:
+    print("%s" % packetHandler.getRxPacketError(dxl_error))
+
+print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID_8, dxl_goal_position[index], dxl_present_position))
+DXL_ID_8_GOAL = dxl_present_position
+
+
 
 
 # Write torque limit
@@ -408,6 +492,100 @@ while 1:
         elif dxl_error != 0:
             print("id4 %s" % packetHandler.getRxPacketError(dxl_error))
 
+
+    elif keychar == 't':
+        print('found t----------servo1-up  servo2-down')
+        
+        if check_moving_limits(keychar, 10, DXL_ID_5_GOAL, DXL_ID_6_GOAL):
+            DXL_ID_5_GOAL = DXL_ID_5_GOAL + 10
+            DXL_ID_6_GOAL = DXL_ID_6_GOAL + 10
+        print("goal5 %s" % DXL_ID_5_GOAL)
+        print("goal6 %s" % DXL_ID_6_GOAL)
+        
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_5, ADDR_AX_GOAL_POSITION, DXL_ID_5_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("id5 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("id5 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_6, ADDR_AX_GOAL_POSITION, DXL_ID_6_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("id6 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("id6 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+            
+    elif keychar == 'z':
+        print('found z----------servo1-down  servo2-up')
+        
+        if check_moving_limits(keychar, 10, DXL_ID_5_GOAL, DXL_ID_6_GOAL):
+            DXL_ID_5_GOAL = DXL_ID_5_GOAL - 10
+            DXL_ID_6_GOAL = DXL_ID_6_GOAL - 10
+        print("goal5 %s" % DXL_ID_5_GOAL)
+        print("goal6 %s" % DXL_ID_6_GOAL)
+        
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_5, ADDR_AX_GOAL_POSITION, DXL_ID_5_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("id5 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("id5 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_6, ADDR_AX_GOAL_POSITION, DXL_ID_6_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("id6 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("id6 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+    elif keychar == 'u':
+        print('found u----------servo1-up  servo2-down')
+        
+        if check_moving_limits(keychar, 10, DXL_ID_7_GOAL, DXL_ID_8_GOAL):
+            DXL_ID_7_GOAL = DXL_ID_7_GOAL + 10
+            DXL_ID_8_GOAL = DXL_ID_8_GOAL + 10
+        print("goal7 %s" % DXL_ID_7_GOAL)
+        print("goal8 %s" % DXL_ID_8_GOAL)
+        
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_7, ADDR_AX_GOAL_POSITION, DXL_ID_7_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("id7 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("id7 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_8, ADDR_AX_GOAL_POSITION, DXL_ID_8_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("id8 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("id8 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+            
+    elif keychar == 'i':
+        print('found i----------servo1-down  servo2-up')
+        
+        if check_moving_limits(keychar, 10, DXL_ID_7_GOAL, DXL_ID_8_GOAL):
+            DXL_ID_7_GOAL = DXL_ID_7_GOAL - 10
+            DXL_ID_8_GOAL = DXL_ID_8_GOAL - 10
+        print("goal7 %s" % DXL_ID_7_GOAL)
+        print("goal8 %s" % DXL_ID_8_GOAL)
+        
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_7, ADDR_AX_GOAL_POSITION, DXL_ID_7_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("id7 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("id7 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+        # Write goal position
+        dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_8, ADDR_AX_GOAL_POSITION, DXL_ID_8_GOAL)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("id8 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("id8 %s" % packetHandler.getRxPacketError(dxl_error))
 
 #     # Write goal position
 #     dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_1, ADDR_AX_GOAL_POSITION, dxl_goal_position[index])
