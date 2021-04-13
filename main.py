@@ -27,6 +27,10 @@
 # This example is tested with a DXL AX-12a, and an USB2DYNAMIXEL
 # Be sure that DXL AX properties are already set as %% ID : 1 / Baudnum : 34 (Baudrate : 57600)
 #
+import sys
+import select
+import tty
+import termios
 
 import os
 
@@ -47,6 +51,9 @@ else:
         return ch
 
 from dynamixel_sdk import *                    # Uses Dynamixel SDK library
+
+def isData():
+    return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
 
 
 def check_moving_limits(key, stepsize, DXL_ID_1_GOAL, DXL_ID_2_GOAL):
@@ -150,6 +157,60 @@ def check_moving_limits(key, stepsize, DXL_ID_1_GOAL, DXL_ID_2_GOAL):
 
 
 
+def check_torque_limit(DXL_ID, DXL_ID_MOVING_TORQUE_LIMIT, DXL_ID_GOAL, turn_cw):
+    do_work = True
+    
+    print("idddd")
+    print(DXL_ID)
+    
+    while do_work:
+        # Read present position
+        dxl_present_torque, dxl_comm_result, dxl_error = packetHandler.read2ByteTxRx(portHandler, DXL_ID, ADDR_PRESENT_LOAD)
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("%s" % packetHandler.getRxPacketError(dxl_error))
+        
+        print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_torque))
+        DXL_ID_PRESENT_TORQUE = dxl_present_torque
+       
+        
+        if DXL_ID_PRESENT_TORQUE > DXL_ID_MOVING_TORQUE_LIMIT:
+            ### if cw=clock-wise
+            if turn_cw:
+                DXL_ID_GOAL = DXL_ID_GOAL - 2
+            else:
+                DXL_ID_GOAL = DXL_ID_GOAL + 2
+            # Write goal position
+            dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID, ADDR_AX_GOAL_POSITION, DXL_ID_GOAL)
+            if dxl_comm_result != COMM_SUCCESS:
+                print("id1 %s" % packetHandler.getTxRxResult(dxl_comm_result))
+            elif dxl_error != 0:
+                print("id1 %s" % packetHandler.getRxPacketError(dxl_error))
+                
+        else:
+            do_work = False
+    
+    
+def check_all_torque_limits(dont_check):
+    if dont_check is not DXL_ID_1:
+        check_torque_limit(DXL_ID_1, DXL_ID_1_MOVING_TORQUE_LIMIT, DXL_ID_1_GOAL, False)
+    if dont_check is not DXL_ID_2:
+        check_torque_limit(DXL_ID_2, DXL_ID_2_MOVING_TORQUE_LIMIT, DXL_ID_2_GOAL, True)
+    if dont_check != DXL_ID_3:
+        check_torque_limit(DXL_ID_3, DXL_ID_3_MOVING_TORQUE_LIMIT, DXL_ID_3_GOAL, False)
+    if dont_check != DXL_ID_4:
+        check_torque_limit(DXL_ID_4, DXL_ID_4_MOVING_TORQUE_LIMIT, DXL_ID_4_GOAL, True)
+    if dont_check != DXL_ID_5:
+        check_torque_limit(DXL_ID_5, DXL_ID_5_MOVING_TORQUE_LIMIT, DXL_ID_5_GOAL, False)
+    if dont_check != DXL_ID_6:
+        check_torque_limit(DXL_ID_6, DXL_ID_6_MOVING_TORQUE_LIMIT, DXL_ID_6_GOAL, True)
+#     if dont_check != DXL_ID_7:
+#         check_torque_limit(DXL_ID_7, DXL_ID_7_MOVING_TORQUE_LIMIT, DXL_ID_7_GOAL, False)
+    if dont_check != DXL_ID_8:
+        check_torque_limit(DXL_ID_8, DXL_ID_8_MOVING_TORQUE_LIMIT, DXL_ID_8_GOAL, True)
+    
+
 # Control table address
 ADDR_AX_TORQUE_ENABLE       = 24                          # Control table address is different in Dynamixel model
 ADDR_AX_GOAL_POSITION       = 30
@@ -157,6 +218,7 @@ ADDR_AX_PRESENT_POSITION    = 36
 ADDR_AX_LED                 = 25  #1byte
 ADDR_MOVING_SPEED           = 32   #2byte   0->1023    0=full,  1=very-very-slow  ,100=faster 1023=fastest
 ADDR_TORQUE_LIMIT          = 34    #2byte  0->1023
+ADDR_PRESENT_LOAD           = 40
 
 # Protocol version
 PROTOCOL_VERSION            = 1.0               # See which protocol version is used in the Dynamixel
@@ -212,6 +274,17 @@ DXL_ID_8_GOAL_MAX           = 1023  #775
 DXL_ID_7_8_SPEED            = 0
 
 DXL_ID_1_TORQUE_LIMIT       = 1023
+
+DXL_ID_1_MOVING_TORQUE_LIMIT       = 300
+DXL_ID_2_MOVING_TORQUE_LIMIT       = 300
+DXL_ID_3_MOVING_TORQUE_LIMIT       = 300
+DXL_ID_4_MOVING_TORQUE_LIMIT       = 300
+DXL_ID_5_MOVING_TORQUE_LIMIT       = 300
+DXL_ID_6_MOVING_TORQUE_LIMIT       = 300
+DXL_ID_7_MOVING_TORQUE_LIMIT       = 300
+DXL_ID_8_MOVING_TORQUE_LIMIT       = 300
+
+DXL_ID_1_2_SPEED    = 30
 
 index = 0
 dxl_goal_position = [DXL_MINIMUM_POSITION_VALUE, DXL_MAXIMUM_POSITION_VALUE]         # Goal position
@@ -359,6 +432,8 @@ elif dxl_error != 0:
 
 while 1:
     print("Press any key to continue! (or press ESC to quit!)")
+#     if isData():
+#         c = sys.stdin.read(1)
     keychar = getch()
     if keychar == chr(0x1b):
         break
@@ -385,6 +460,8 @@ while 1:
         elif dxl_error != 0:
             print("id2 %s" % packetHandler.getRxPacketError(dxl_error))
             
+        check_all_torque_limits(DXL_ID_2)
+            
             
     elif keychar == 'w':
         print('found w----------servo1-down  servo2-up')
@@ -408,6 +485,8 @@ while 1:
             print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
         elif dxl_error != 0:
             print("%s" % packetHandler.getRxPacketError(dxl_error))
+            
+        check_all_torque_limits(DXL_ID_1)
         
         
     elif keychar == 'a':
@@ -516,6 +595,8 @@ while 1:
         elif dxl_error != 0:
             print("id4 %s" % packetHandler.getRxPacketError(dxl_error))
             
+        check_all_torque_limits(DXL_ID_4)
+            
             
     elif keychar == 'r':
         print('found r----------servo1-down  servo2-up')
@@ -539,6 +620,8 @@ while 1:
             print("id4 %s" % packetHandler.getTxRxResult(dxl_comm_result))
         elif dxl_error != 0:
             print("id4 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+        check_all_torque_limits(DXL_ID_3)
 
     elif keychar == 'd':
         print('found d----------servo1-2 down')
@@ -610,6 +693,8 @@ while 1:
         elif dxl_error != 0:
             print("id6 %s" % packetHandler.getRxPacketError(dxl_error))
             
+        check_all_torque_limits(DXL_ID_6)
+            
             
     elif keychar == 'z':
         print('found z----------servo1-down  servo2-up')
@@ -633,6 +718,8 @@ while 1:
             print("id6 %s" % packetHandler.getTxRxResult(dxl_comm_result))
         elif dxl_error != 0:
             print("id6 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+        check_all_torque_limits(DXL_ID_5)
             
     elif keychar == 'g':
         print('found g----------servo1-2 down')
@@ -704,6 +791,8 @@ while 1:
         elif dxl_error != 0:
             print("id8 %s" % packetHandler.getRxPacketError(dxl_error))
             
+        check_all_torque_limits(DXL_ID_8)
+            
             
     elif keychar == 'i':
         print('found i----------servo1-down  servo2-up')
@@ -727,6 +816,8 @@ while 1:
             print("id8 %s" % packetHandler.getTxRxResult(dxl_comm_result))
         elif dxl_error != 0:
             print("id8 %s" % packetHandler.getRxPacketError(dxl_error))
+            
+        check_all_torque_limits(DXL_ID_7)
             
     elif keychar == 'j':
         print('found j----------servo1-2 down')
