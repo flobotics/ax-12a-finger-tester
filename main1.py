@@ -18,13 +18,49 @@ def getch():
 
 def get_config_dict():
     config = dict();
+    config['ADDR_AX_MODEL_NUMBER']= 0
+    config['ADDR_AX_FIRMWARE_VERSION']= 2
+    config['ADDR_AX_ID']= 3
+    config['ADDR_AX_BAUDRATE_BUS']= 4
+    config['ADDR_AX_RETURN_DELAY_TIME']= 5
+    config['ADDR_AX_CW_ANGLE_LIMIT']= 6
+    config['ADDR_AX_CCW_ANGLE_LIMIT']= 8
+    config['ADDR_AX_TEMPERATURE_LIMIT']= 11
+    config['ADDR_AX_MIN_VOLTAGE_LIMIT']= 12
+    config['ADDR_AX_MAX_VOLTAGE_LIMIT']= 13
+    config['ADDR_AX_MAX_TORQUE']= 14
+    config['ADDR_AX_STATUS_RETURN_LEVEL']= 16
+    config['ADDR_AX_ALARM_LED']= 17
+    config['ADDR_AX_SHUTDOWN']= 18
     config['ADDR_AX_TORQUE_ENABLE']= 24
-    config['ADDR_AX_GOAL_POSITION']= 30
-    config['ADDR_AX_PRESENT_POSITION']= 36
     config['ADDR_AX_LED']= 25
+    config['ADDR_AX_CW_COMPLIANCE_MARGIN']= 26
+    config['ADDR_AX_CCW_COMPLIANCE_MARGIN']= 27
+    config['ADDR_AX_CW_COMPLIANCE_SLOPE']= 28
+    config['ADDR_AX_CCW_COMPLIANCE_MARGIN']= 29
+    config['ADDR_AX_GOAL_POSITION']= 30
     config['ADDR_AX_MOVING_SPEED']= 32
     config['ADDR_AX_TORQUE_LIMIT']= 34
+    config['ADDR_AX_PRESENT_POSITION']= 36
+    config['ADDR_AX_PRESENT_SPEED']= 38
     config['ADDR_AX_PRESENT_LOAD']= 40
+    config['ADDR_AX_PRESENT_INPUT_VOLTAGE']= 42
+    config['ADDR_AX_PRESENT_TEMPERATURE']= 43
+    config['ADDR_AX_REGISTERED']= 44
+    config['ADDR_AX_MOVING']= 46
+    config['ADDR_AX_LOCK']= 47
+    config['ADDR_AX_PUNCH']= 48
+    
+    
+#     config['ADDR_AX_TORQUE_ENABLE']= 24
+#     config['ADDR_AX_GOAL_POSITION']= 30
+#     config['ADDR_AX_PRESENT_POSITION']= 36
+#     config['ADDR_AX_LED']= 25
+#     config['ADDR_AX_MOVING_SPEED']= 32
+#     config['ADDR_AX_TORQUE_LIMIT']= 34
+#     config['ADDR_AX_PRESENT_LOAD']= 40
+    
+    
     config['PROTOCOL_VERSION']= 1.0
     config['BAUDRATE']= 1000000
     config['DEVICENAME']= '/dev/ttyUSB0'
