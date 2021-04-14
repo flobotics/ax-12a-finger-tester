@@ -1,6 +1,7 @@
 import sys
 import sys, tty, termios
 from dynamixel_sdk import *                    # Uses Dynamixel SDK library
+from _ast import Or
 
 fd = sys.stdin.fileno()
 old_settings = termios.tcgetattr(fd)
@@ -196,9 +197,6 @@ def check_moving_limits(left_servo_used, stepsize, left_id, right_id, LEFT_ID_GO
 def check_torque_limit(id, DXL_ID_GOAL, turn_cw, pa_h, po_h, config):
     do_work = True
     
-    print("idddd")
-    print(id)
-    
     while do_work:
         # Read present position
         dxl_present_torque, dxl_comm_result, dxl_error = pa_h.read2ByteTxRx(po_h, id, config['ADDR_AX_PRESENT_LOAD'])
@@ -209,7 +207,7 @@ def check_torque_limit(id, DXL_ID_GOAL, turn_cw, pa_h, po_h, config):
         
 #         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_torque))
 #         DXL_ID_PRESENT_TORQUE = dxl_present_torque
-        print("[ID:%03d] PresPos:%03d" % (id, dxl_present_torque))
+        print("[ID:%03d] PresPos:%s" % (id, dxl_present_torque))
         print("[ID:%03d] Torque-limit:%d" % (id, config['DAX_ID_' + str(id) + '_MOVING_TORQUE_LIMIT']))
        
         
@@ -278,50 +276,96 @@ def main():
         keychar = getch()
         if keychar == chr(0x1b):
             break
-        elif keychar == 'q':
+        elif keychar == 'q' or keychar == 'e' or keychar == 't' or keychar == 'u':
             print('found q----------servo1-up  servo2-down')
+            print(keychar)
+            
+            if keychar == 'q':
+                r_id = 1
+                l_id = 2
+            elif keychar == 'e':
+                r_id = 3
+                l_id = 4
+            elif keychar == 't':
+                r_id = 5
+                l_id = 6
+            elif keychar == 'u':
+                r_id = 7
+                l_id = 8
             
             if check_moving_limits(True, 
                                    10, 
-                                   config['DAX_ID_2'], 
-                                   config['DAX_ID_1'], 
-                                   config['DAX_ID_2_GOAL'], 
-                                   config['DAX_ID_1_GOAL'], 
+                                   config['DAX_ID_' + str(l_id)], 
+                                   config['DAX_ID_' + str(r_id)],
+                                   config['DAX_ID_' + str(r_id) + '_GOAL'], 
+                                   config['DAX_ID_' + str(l_id) + '_GOAL'], 
                                    config):
-#             if check_moving_limits(keychar, 10, DAX_ID_1_GOAL, DAX_ID_2_GOAL):
-                config['DAX_ID_1_GOAL'] = config['DAX_ID_1_GOAL'] + 10
-                config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] + 10
-            print("%s" % config['DAX_ID_1_GOAL'])
-            print("%s" % config['DAX_ID_2_GOAL'])
+                config['DAX_ID_' + str(r_id) + '_GOAL'] = config['DAX_ID_' + str(r_id) + '_GOAL'] + 10
+                config['DAX_ID_' + str(l_id) + '_GOAL'] = config['DAX_ID_' + str(l_id) + '_GOAL'] + 10
+            print("%s" % config['DAX_ID_' + str(r_id) + '_GOAL'])
+            print("%s" % config['DAX_ID_' + str(l_id) + '_GOAL'])
             
             # Write goal position
-            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_1'], config)
-            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_2'], config)
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(r_id)], config)
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(l_id)], config)
                 
-            check_all_torque_limits(config['DAX_ID_2'], packetHandler, portHandler, config)
+            check_all_torque_limits(config['DAX_ID_' + str(l_id)], packetHandler, portHandler, config)
             
-        elif keychar == 'w':
+#         elif keychar == 'q' or keychar == 'e':
+#             print('found q----------servo1-up  servo2-down')
+#             
+#             if check_moving_limits(True, 
+#                                    10, 
+#                                    config['DAX_ID_2'], 
+#                                    config['DAX_ID_1'], 
+#                                    config['DAX_ID_2_GOAL'], 
+#                                    config['DAX_ID_1_GOAL'], 
+#                                    config):
+#                 config['DAX_ID_1_GOAL'] = config['DAX_ID_1_GOAL'] + 10
+#                 config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] + 10
+#             print("%s" % config['DAX_ID_1_GOAL'])
+#             print("%s" % config['DAX_ID_2_GOAL'])
+#             
+#             # Write goal position
+#             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_1'], config)
+#             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_2'], config)
+#                 
+#             check_all_torque_limits(config['DAX_ID_2'], packetHandler, portHandler, config)
+            
+        elif keychar == 'w' or keychar == 'r' or keychar == 'z' or keychar == 'i':
             print('found w----------servo1-down  servo2-up')
+            
+            if keychar == 'w':
+                r_id = 1
+                l_id = 2
+            elif keychar == 'r':
+                r_id = 3
+                l_id = 4
+            elif keychar == 'z':
+                r_id = 5
+                l_id = 6
+            elif keychar == 'i':
+                r_id = 7
+                l_id = 8
             
             if check_moving_limits(False, 
                                    10,
-                                   config['DAX_ID_2'], 
-                                   config['DAX_ID_1'],  
-                                   config['DAX_ID_2_GOAL'], 
-                                   config['DAX_ID_1_GOAL'], 
+                                   config['DAX_ID_' + str(l_id)], 
+                                   config['DAX_ID_' + str(r_id)],  
+                                   config['DAX_ID_' + str(l_id) + '_GOAL'], 
+                                   config['DAX_ID_' + str(r_id) + '_GOAL'], 
                                    config):
-            #if check_moving_limits(keychar, 10, DXL_ID_1_GOAL, DXL_ID_2_GOAL):
-                config['DAX_ID_1_GOAL'] = config['DAX_ID_1_GOAL'] - 10
-                config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] - 10
-            print("%s" % config['DAX_ID_1_GOAL'])
-            print("%s" % config['DAX_ID_2_GOAL'])
+                config['DAX_ID_' + str(r_id) + '_GOAL'] = config['DAX_ID_' + str(r_id) + '_GOAL'] - 10
+                config['DAX_ID_' + str(l_id) + '_GOAL'] = config['DAX_ID_' + str(l_id) + '_GOAL'] - 10
+            print("%s" % config['DAX_ID_' + str(r_id) + '_GOAL'])
+            print("%s" % config['DAX_ID_' + str(l_id) + '_GOAL'])
             
             # Write goal position
-            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_1'], config)
-            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_2'], config)
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(r_id)], config)
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(l_id)], config)
             
             
-            check_all_torque_limits(config['DAX_ID_1'], packetHandler, portHandler, config)
+            check_all_torque_limits(config['DAX_ID_' + str(r_id)], packetHandler, portHandler, config)
     
     
 
