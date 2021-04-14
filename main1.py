@@ -100,6 +100,11 @@ def get_config_dict():
     config['DAX_ID_7_GOAL_MAX']= 1023
     config['DAX_ID_8_GOAL_MAX']= 1023
     
+    config['DAX_ID_1_2_SPEED'] = 200
+    config['DAX_ID_3_4_SPEED'] = 200
+    config['DAX_ID_5_6_SPEED'] = 200
+    config['DAX_ID_7_8_SPEED'] = 200
+    
     config['DAX_ID_1_TORQUE_LIMIT']= 300
     config['DAX_ID_2_TORQUE_LIMIT']= 300
     config['DAX_ID_3_TORQUE_LIMIT']= 300
@@ -177,6 +182,24 @@ def ax12_write_goal_position(pa_h, po_h, id, config):
         print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
     elif dxl_error != 0:
         print("id %s" % pa_h.getRxPacketError(dxl_error))
+        
+        
+def ax12_write_moving_speed(pa_h, po_h, id, config):
+    if id == 1 or id == 2:
+        DXA_ID_SPEED = config['DAX_ID_1_2_SPEED']
+    if id == 3 or id == 4:
+        DXA_ID_SPEED = config['DAX_ID_3_4_SPEED']
+    if id == 5 or id == 6:
+        DXA_ID_SPEED = config['DAX_ID_5_6_SPEED']
+    if id == 7 or id == 8:
+        DXA_ID_SPEED = config['DAX_ID_7_8_SPEED']
+        
+    # Write speed
+    dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, config['DAX_ID_' + str(id)], config['ADDR_AX_MOVING_SPEED'], DXA_ID_SPEED)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("%s" % pa_h.getRxPacketError(dxl_error))
         
         
         
@@ -266,6 +289,7 @@ def main():
         ax12_enable_torque(packetHandler, portHandler, i, config)
         ax12_write_torque_limit(packetHandler, portHandler, i, config, )
         ax12_read_present_position(packetHandler, portHandler, i, config)
+        ax12_write_moving_speed(packetHandler, portHandler, i, config)
         print("%d" % config['DAX_ID_' + str(i) + '_GOAL'])
         
         
@@ -387,19 +411,6 @@ def main():
             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(r_id)], config)
             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(l_id)], config)
             
-            # Write goal position
-#             dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_1, ADDR_AX_GOAL_POSITION, DXL_ID_1_GOAL)
-#             if dxl_comm_result != COMM_SUCCESS:
-#                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-#             elif dxl_error != 0:
-#                 print("%s" % packetHandler.getRxPacketError(dxl_error))
-#                 
-#             # Write goal position
-#             dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_2, ADDR_AX_GOAL_POSITION, DXL_ID_2_GOAL)
-#             if dxl_comm_result != COMM_SUCCESS:
-#                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-#             elif dxl_error != 0:
-#                 print("%s" % packetHandler.getRxPacketError(dxl_error))
             
         elif keychar == 's' or keychar == 'f' or keychar == 'h' or keychar == 'k':
             print('found s----------servo1-2 down')
@@ -432,21 +443,86 @@ def main():
             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(r_id)], config)
             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(l_id)], config)
             
-#             # Write goal position
-#             dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_1, ADDR_AX_GOAL_POSITION, DXL_ID_1_GOAL)
-#             if dxl_comm_result != COMM_SUCCESS:
-#                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-#             elif dxl_error != 0:
-#                 print("%s" % packetHandler.getRxPacketError(dxl_error))
-#                 
-#             # Write goal position
-#             dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_2, ADDR_AX_GOAL_POSITION, DXL_ID_2_GOAL)
-#             if dxl_comm_result != COMM_SUCCESS:
-#                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
-#             elif dxl_error != 0:
-#                 print("%s" % packetHandler.getRxPacketError(dxl_error))
+
+        elif keychar == 'y' or keychar == 'c' or keychar == 'b' or keychar == 'm':
+            print('found y----------servo1-2  speed up') 
+            
+            if keychar == 'y':
+                config['DAX_ID_1_2_SPEED'] = config['DAX_ID_1_2_SPEED'] + 10
+                DXA_ID_SPEED = config['DAX_ID_1_2_SPEED']
+                r_id = 1
+                l_id = 2
+            elif keychar == 'c':
+                config['DAX_ID_3_4_SPEED'] = config['DAX_ID_3_4_SPEED'] + 10
+                DXA_ID_SPEED = config['DAX_ID_3_4_SPEED']
+                r_id = 3
+                l_id = 4
+            elif keychar == 'b':
+                config['DAX_ID_5_6_SPEED'] = config['DAX_ID_5_6_SPEED'] + 10
+                DXA_ID_SPEED = config['DAX_ID_5_6_SPEED']
+                r_id = 5
+                l_id = 6
+            elif keychar == 'm':
+                config['DAX_ID_7_8_SPEED'] = config['DAX_ID_7_8_SPEED'] + 10
+                DXA_ID_SPEED = config['DAX_ID_7_8_SPEED']
+                r_id = 7
+                l_id = 8
+            
+             
+            print("%s" % DXA_ID_SPEED)
+            
+            # Write speed
+            dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, config['DAX_ID_' + str(l_id)], config['ADDR_AX_MOVING_SPEED'], DXA_ID_SPEED)
+            if dxl_comm_result != COMM_SUCCESS:
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+            elif dxl_error != 0:
+                print("%s" % packetHandler.getRxPacketError(dxl_error))
+                
+            dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, config['DAX_ID_' + str(r_id)], config['ADDR_AX_MOVING_SPEED'], DXA_ID_SPEED)
+            if dxl_comm_result != COMM_SUCCESS:
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+            elif dxl_error != 0:
+                print("%s" % packetHandler.getRxPacketError(dxl_error))
+            
+        elif keychar == 'x' or keychar == 'v' or keychar == 'n' or keychar == ',':
+            print('found y----------servo1-2  speed down') 
+            
+            if keychar == 'x':
+                config['DAX_ID_1_2_SPEED'] = config['DAX_ID_1_2_SPEED'] - 10
+                DXA_ID_SPEED = config['DAX_ID_1_2_SPEED']
+                r_id = 1
+                l_id = 2
+            elif keychar == 'v':
+                config['DAX_ID_3_4_SPEED'] = config['DAX_ID_3_4_SPEED'] - 10
+                DXA_ID_SPEED = config['DAX_ID_3_4_SPEED']
+                r_id = 3
+                l_id = 4
+            elif keychar == 'n':
+                config['DAX_ID_5_6_SPEED'] = config['DAX_ID_5_6_SPEED'] - 10
+                DXA_ID_SPEED = config['DAX_ID_5_6_SPEED']
+                r_id = 5
+                l_id = 6
+            elif keychar == ',':
+                config['DAX_ID_7_8_SPEED'] = config['DAX_ID_7_8_SPEED'] - 10
+                DXA_ID_SPEED = config['DAX_ID_7_8_SPEED']
+                r_id = 7
+                l_id = 8
+            
+            print("%s" % DXA_ID_SPEED)
+            
+            # Write speed
+            dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, config['DAX_ID_' + str(r_id)], config['ADDR_AX_MOVING_SPEED'], DXA_ID_SPEED)
+            if dxl_comm_result != COMM_SUCCESS:
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+            elif dxl_error != 0:
+                print("%s" % packetHandler.getRxPacketError(dxl_error))
+                
+            dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, config['DAX_ID_' + str(l_id)], config['ADDR_AX_MOVING_SPEED'], DXA_ID_SPEED)
+            if dxl_comm_result != COMM_SUCCESS:
+                print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+            elif dxl_error != 0:
+                print("%s" % packetHandler.getRxPacketError(dxl_error))      
         
-    
 
 if __name__ == "__main__":
     # execute only if run as a script
