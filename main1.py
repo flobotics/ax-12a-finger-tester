@@ -80,14 +80,42 @@ def get_config_dict():
     config['DAX_ID_6_GOAL']= 0
     config['DAX_ID_7_GOAL']= 0
     config['DAX_ID_8_GOAL']= 0
-    config['DAX_ID_1_TORQUE_LIMIT']= 1
-    config['DAX_ID_2_TORQUE_LIMIT']= 2
-    config['DAX_ID_3_TORQUE_LIMIT']= 3
-    config['DAX_ID_4_TORQUE_LIMIT']= 4
-    config['DAX_ID_5_TORQUE_LIMIT']= 5
-    config['DAX_ID_6_TORQUE_LIMIT']= 6
-    config['DAX_ID_7_TORQUE_LIMIT']= 7
-    config['DAX_ID_8_TORQUE_LIMIT']= 8
+    
+    config['DAX_ID_1_GOAL_MIN']= 0
+    config['DAX_ID_2_GOAL_MIN']= 0
+    config['DAX_ID_3_GOAL_MIN']= 0
+    config['DAX_ID_4_GOAL_MIN']= 0
+    config['DAX_ID_5_GOAL_MIN']= 0
+    config['DAX_ID_6_GOAL_MIN']= 0
+    config['DAX_ID_7_GOAL_MIN']= 0
+    config['DAX_ID_8_GOAL_MIN']= 0
+    
+    config['DAX_ID_1_GOAL_MAX']= 1023
+    config['DAX_ID_2_GOAL_MAX']= 1023
+    config['DAX_ID_3_GOAL_MAX']= 1023
+    config['DAX_ID_4_GOAL_MAX']= 1023
+    config['DAX_ID_5_GOAL_MAX']= 1023
+    config['DAX_ID_6_GOAL_MAX']= 1023
+    config['DAX_ID_7_GOAL_MAX']= 1023
+    config['DAX_ID_8_GOAL_MAX']= 1023
+    
+    config['DAX_ID_1_TORQUE_LIMIT']= 300
+    config['DAX_ID_2_TORQUE_LIMIT']= 300
+    config['DAX_ID_3_TORQUE_LIMIT']= 300
+    config['DAX_ID_4_TORQUE_LIMIT']= 300
+    config['DAX_ID_5_TORQUE_LIMIT']= 300
+    config['DAX_ID_6_TORQUE_LIMIT']= 300
+    config['DAX_ID_7_TORQUE_LIMIT']= 300
+    config['DAX_ID_8_TORQUE_LIMIT']= 300
+    config['DAX_ID_1_MOVING_TORQUE_LIMIT']= 300
+    config['DAX_ID_2_MOVING_TORQUE_LIMIT']= 300
+    config['DAX_ID_3_MOVING_TORQUE_LIMIT']= 300
+    config['DAX_ID_4_MOVING_TORQUE_LIMIT']= 300
+    config['DAX_ID_5_MOVING_TORQUE_LIMIT']= 300
+    config['DAX_ID_6_MOVING_TORQUE_LIMIT']= 300
+    config['DAX_ID_7_MOVING_TORQUE_LIMIT']= 300
+    config['DAX_ID_8_MOVING_TORQUE_LIMIT']= 300
+    
     config['TORQUE_ENABLE']= 1
     config['TORQUE_DISABLE']= 0
     
@@ -140,6 +168,88 @@ def ax12_write_torque_limit(pa_h, po_h, id, config):
         print("%s" % pa_h.getRxPacketError(dxl_error))
     else:
         print("[ID:%03d] Set Torque Limit:%d" % (id, config['ADDR_AX_TORQUE_LIMIT']))
+        
+        
+def ax12_write_goal_position(pa_h, po_h, id, config):
+    dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_GOAL_POSITION'], config['DAX_ID_' + str(id) + '_GOAL'])
+    if dxl_comm_result != COMM_SUCCESS:
+        print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("id %s" % pa_h.getRxPacketError(dxl_error))
+        
+        
+        
+###    newwww
+def check_moving_limits(left_servo_used, stepsize, LEFT_ID_GOAL, RIGHT_ID_GOAL, config):
+    if left_servo_used:
+        if ((LEFT_ID_GOAL + stepsize) <= config['DAX_ID_2_GOAL_MAX']) and ((RIGHT_ID_GOAL + stepsize) <= config['DAX_ID_1_GOAL_MAX']):
+            return True
+        else:
+            return False
+    else:
+        if ((LEFT_ID_GOAL - stepsize) >= config['DAX_ID_2_GOAL_MIN']) and ((RIGHT_ID_GOAL - stepsize) >= config['DAX_ID_1_GOAL_MIN']):
+            return True
+        else:
+            return False
+    
+    
+def check_torque_limit(id, DXL_ID_GOAL, turn_cw, pa_h, po_h, config):
+    do_work = True
+    
+    print("idddd")
+    print(id)
+    
+    while do_work:
+        # Read present position
+        dxl_present_torque, dxl_comm_result, dxl_error = pa_h.read2ByteTxRx(po_h, id, config['ADDR_AX_PRESENT_LOAD'])
+        if dxl_comm_result != COMM_SUCCESS:
+            print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            print("%s" % pa_h.getRxPacketError(dxl_error))
+        
+#         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_torque))
+#         DXL_ID_PRESENT_TORQUE = dxl_present_torque
+        print("[ID:%03d] PresPos:%03d" % (id, dxl_present_torque))
+        print("[ID:%03d] Torque-limit:%d" % (id, config['DAX_ID_' + str(id) + '_MOVING_TORQUE_LIMIT']))
+       
+        
+        if dxl_present_torque > config['DAX_ID_' + str(id) + '_MOVING_TORQUE_LIMIT']:
+            ### if cw=clock-wise
+            if turn_cw:
+               config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] - 2
+            else:
+                config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] + 2
+                
+            # Write goal position
+            dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_GOAL_POSITION'], config['DAX_ID_' + str(id) + '_GOAL'])
+            if dxl_comm_result != COMM_SUCCESS:
+                print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
+            elif dxl_error != 0:
+                print("id %s" % pa_h.getRxPacketError(dxl_error))
+                
+        else:
+            do_work = False
+        
+        
+def check_all_torque_limits(dont_check, pa_h, po_h, config):
+    if dont_check is not 1:
+        check_torque_limit(config['DAX_ID_1'] , config['DAX_ID_1_GOAL'], False, pa_h, po_h, config)
+    if dont_check is not 2:
+        check_torque_limit(config['DAX_ID_2'], config['DAX_ID_2_GOAL'], True, pa_h, po_h, config)
+    if dont_check is not 3:
+        check_torque_limit(config['DAX_ID_3'], config['DAX_ID_3_GOAL'], False, pa_h, po_h, config)
+    if dont_check is not 4:
+        check_torque_limit(config['DAX_ID_4'], config['DAX_ID_4_GOAL'], True, pa_h, po_h, config)
+    if dont_check is not 5:
+        check_torque_limit(config['DAX_ID_5'], config['DAX_ID_5_GOAL'], False, pa_h, po_h, config)
+    if dont_check is not 6:
+        check_torque_limit(config['DAX_ID_6'], config['DAX_ID_6_GOAL'], True, pa_h, po_h, config)
+    if dont_check is not 7:
+        check_torque_limit(config['DAX_ID_7'], config['DAX_ID_7_GOAL'], False, pa_h, po_h, config)
+    if dont_check is not 8:
+        check_torque_limit(config['DAX_ID_8'], config['DAX_ID_8_GOAL'], True, pa_h, po_h, config)         
+
+
     
         
 def main():
@@ -159,6 +269,48 @@ def main():
         ax12_write_torque_limit(packetHandler, portHandler, i, config, )
         ax12_read_present_position(packetHandler, portHandler, i, config)
         print("%d" % config['DAX_ID_' + str(i) + '_GOAL'])
+        
+        
+    while 1:
+        print("Press any key to continue! (or press ESC to quit!)")
+    #     if isData():
+    #         c = sys.stdin.read(1)
+        keychar = getch()
+        if keychar == chr(0x1b):
+            break
+        elif keychar == 'q':
+            print('found q----------servo1-up  servo2-down')
+            
+            if check_moving_limits(True, 10, config['DAX_ID_2_GOAL'], config['DAX_ID_1_GOAL'], config):
+#             if check_moving_limits(keychar, 10, DAX_ID_1_GOAL, DAX_ID_2_GOAL):
+                config['DAX_ID_1_GOAL'] = config['DAX_ID_1_GOAL'] + 10
+                config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] + 10
+            print("%s" % config['DAX_ID_1_GOAL'])
+            print("%s" % config['DAX_ID_2_GOAL'])
+            
+            # Write goal position
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_1'], config)
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_2'], config)
+                
+            check_all_torque_limits(config['DAX_ID_2'], packetHandler, portHandler, config)
+            
+        elif keychar == 'w':
+            print('found w----------servo1-down  servo2-up')
+            
+            if check_moving_limits(False, 10, config['DAX_ID_2_GOAL'], config['DAX_ID_1_GOAL'], config):
+            #if check_moving_limits(keychar, 10, DXL_ID_1_GOAL, DXL_ID_2_GOAL):
+                print("inside")
+                config['DAX_ID_1_GOAL'] = config['DAX_ID_1_GOAL'] - 10
+                config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] - 10
+            print("%s" % config['DAX_ID_1_GOAL'])
+            print("%s" % config['DAX_ID_2_GOAL'])
+            
+            # Write goal position
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_1'], config)
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_2'], config)
+            
+            
+            check_all_torque_limits(config['DAX_ID_1'], packetHandler, portHandler, config)
     
     
 
