@@ -311,26 +311,6 @@ def main():
                 
             check_all_torque_limits(config['DAX_ID_' + str(l_id)], packetHandler, portHandler, config)
             
-#         elif keychar == 'q' or keychar == 'e':
-#             print('found q----------servo1-up  servo2-down')
-#             
-#             if check_moving_limits(True, 
-#                                    10, 
-#                                    config['DAX_ID_2'], 
-#                                    config['DAX_ID_1'], 
-#                                    config['DAX_ID_2_GOAL'], 
-#                                    config['DAX_ID_1_GOAL'], 
-#                                    config):
-#                 config['DAX_ID_1_GOAL'] = config['DAX_ID_1_GOAL'] + 10
-#                 config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] + 10
-#             print("%s" % config['DAX_ID_1_GOAL'])
-#             print("%s" % config['DAX_ID_2_GOAL'])
-#             
-#             # Write goal position
-#             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_1'], config)
-#             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_2'], config)
-#                 
-#             check_all_torque_limits(config['DAX_ID_2'], packetHandler, portHandler, config)
             
         elif keychar == 'w' or keychar == 'r' or keychar == 'z' or keychar == 'i':
             print('found w----------servo1-down  servo2-up')
@@ -366,7 +346,106 @@ def main():
             
             
             check_all_torque_limits(config['DAX_ID_' + str(r_id)], packetHandler, portHandler, config)
-    
+            
+            
+            
+            
+            
+            
+            
+        elif keychar == 'a' or keychar == 'd' or keychar == 'g' or keychar == 'j':
+            print('found a----------servo1-2 up')
+            
+            if keychar == 'a':
+                r_id = 1
+                l_id = 2
+            elif keychar == 'd':
+                r_id = 3
+                l_id = 4
+            elif keychar == 'g':
+                r_id = 5
+                l_id = 6
+            elif keychar == 'j':
+                r_id = 7
+                l_id = 8
+            
+            if check_moving_limits(True, 
+                                   10, 
+                                   config['DAX_ID_' + str(l_id)], 
+                                   config['DAX_ID_' + str(r_id)],
+                                   config['DAX_ID_' + str(r_id) + '_GOAL'], 
+                                   config['DAX_ID_' + str(l_id) + '_GOAL'], 
+                                   config):
+            
+#             if check_moving_limits(keychar, 10, DXL_ID_1_GOAL, DXL_ID_2_GOAL):
+                config['DAX_ID_' + str(r_id) + '_GOAL'] = config['DAX_ID_' + str(r_id) + '_GOAL'] + 10
+                config['DAX_ID_' + str(l_id) + '_GOAL'] = config['DAX_ID_' + str(l_id) + '_GOAL'] - 10
+            print("%s" % config['DAX_ID_' + str(r_id) + '_GOAL'])
+            print("%s" % config['DAX_ID_' + str(l_id) + '_GOAL'])
+            
+            
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(r_id)], config)
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(l_id)], config)
+            
+            # Write goal position
+#             dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_1, ADDR_AX_GOAL_POSITION, DXL_ID_1_GOAL)
+#             if dxl_comm_result != COMM_SUCCESS:
+#                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+#             elif dxl_error != 0:
+#                 print("%s" % packetHandler.getRxPacketError(dxl_error))
+#                 
+#             # Write goal position
+#             dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_2, ADDR_AX_GOAL_POSITION, DXL_ID_2_GOAL)
+#             if dxl_comm_result != COMM_SUCCESS:
+#                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+#             elif dxl_error != 0:
+#                 print("%s" % packetHandler.getRxPacketError(dxl_error))
+            
+        elif keychar == 's' or keychar == 'f' or keychar == 'h' or keychar == 'k':
+            print('found s----------servo1-2 down')
+            
+            if keychar == 's':
+                r_id = 1
+                l_id = 2
+            elif keychar == 'f':
+                r_id = 3
+                l_id = 4
+            elif keychar == 'h':
+                r_id = 5
+                l_id = 6
+            elif keychar == 'k':
+                r_id = 7
+                l_id = 8
+            
+            if check_moving_limits(False, 
+                                   10,
+                                   config['DAX_ID_' + str(l_id)], 
+                                   config['DAX_ID_' + str(r_id)],  
+                                   config['DAX_ID_' + str(l_id) + '_GOAL'], 
+                                   config['DAX_ID_' + str(r_id) + '_GOAL'], 
+                                   config):
+                config['DAX_ID_' + str(r_id) + '_GOAL'] = config['DAX_ID_' + str(r_id) + '_GOAL'] - 10
+                config['DAX_ID_' + str(l_id) + '_GOAL'] = config['DAX_ID_' + str(l_id) + '_GOAL'] + 10
+            print("%s" % config['DAX_ID_' + str(r_id) + '_GOAL'])
+            print("%s" % config['DAX_ID_' + str(l_id) + '_GOAL'])
+            
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(r_id)], config)
+            ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_' + str(l_id)], config)
+            
+#             # Write goal position
+#             dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_1, ADDR_AX_GOAL_POSITION, DXL_ID_1_GOAL)
+#             if dxl_comm_result != COMM_SUCCESS:
+#                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+#             elif dxl_error != 0:
+#                 print("%s" % packetHandler.getRxPacketError(dxl_error))
+#                 
+#             # Write goal position
+#             dxl_comm_result, dxl_error = packetHandler.write2ByteTxRx(portHandler, DXL_ID_2, ADDR_AX_GOAL_POSITION, DXL_ID_2_GOAL)
+#             if dxl_comm_result != COMM_SUCCESS:
+#                 print("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+#             elif dxl_error != 0:
+#                 print("%s" % packetHandler.getRxPacketError(dxl_error))
+        
     
 
 if __name__ == "__main__":
