@@ -180,14 +180,14 @@ def ax12_write_goal_position(pa_h, po_h, id, config):
         
         
 ###    newwww
-def check_moving_limits(left_servo_used, stepsize, LEFT_ID_GOAL, RIGHT_ID_GOAL, config):
+def check_moving_limits(left_servo_used, stepsize, left_id, right_id, LEFT_ID_GOAL, RIGHT_ID_GOAL, config):
     if left_servo_used:
-        if ((LEFT_ID_GOAL + stepsize) <= config['DAX_ID_2_GOAL_MAX']) and ((RIGHT_ID_GOAL + stepsize) <= config['DAX_ID_1_GOAL_MAX']):
+        if ((LEFT_ID_GOAL + stepsize) <= config['DAX_ID_' + str(left_id) + '_GOAL_MAX']) and ((RIGHT_ID_GOAL + stepsize) <= config['DAX_ID_' + str(right_id) + '_GOAL_MAX']):
             return True
         else:
             return False
     else:
-        if ((LEFT_ID_GOAL - stepsize) >= config['DAX_ID_2_GOAL_MIN']) and ((RIGHT_ID_GOAL - stepsize) >= config['DAX_ID_1_GOAL_MIN']):
+        if ((LEFT_ID_GOAL - stepsize) >= config['DAX_ID_' + str(left_id) + '_GOAL_MIN']) and ((RIGHT_ID_GOAL - stepsize) >= config['DAX_ID_' + str(right_id) + '_GOAL_MIN']):
             return True
         else:
             return False
@@ -281,7 +281,13 @@ def main():
         elif keychar == 'q':
             print('found q----------servo1-up  servo2-down')
             
-            if check_moving_limits(True, 10, config['DAX_ID_2_GOAL'], config['DAX_ID_1_GOAL'], config):
+            if check_moving_limits(True, 
+                                   10, 
+                                   config['DAX_ID_2'], 
+                                   config['DAX_ID_1'], 
+                                   config['DAX_ID_2_GOAL'], 
+                                   config['DAX_ID_1_GOAL'], 
+                                   config):
 #             if check_moving_limits(keychar, 10, DAX_ID_1_GOAL, DAX_ID_2_GOAL):
                 config['DAX_ID_1_GOAL'] = config['DAX_ID_1_GOAL'] + 10
                 config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] + 10
@@ -297,9 +303,14 @@ def main():
         elif keychar == 'w':
             print('found w----------servo1-down  servo2-up')
             
-            if check_moving_limits(False, 10, config['DAX_ID_2_GOAL'], config['DAX_ID_1_GOAL'], config):
+            if check_moving_limits(False, 
+                                   10,
+                                   config['DAX_ID_2'], 
+                                   config['DAX_ID_1'],  
+                                   config['DAX_ID_2_GOAL'], 
+                                   config['DAX_ID_1_GOAL'], 
+                                   config):
             #if check_moving_limits(keychar, 10, DXL_ID_1_GOAL, DXL_ID_2_GOAL):
-                print("inside")
                 config['DAX_ID_1_GOAL'] = config['DAX_ID_1_GOAL'] - 10
                 config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] - 10
             print("%s" % config['DAX_ID_1_GOAL'])
