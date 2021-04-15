@@ -8,12 +8,18 @@ old_settings = termios.tcgetattr(fd)
 
 
 
-def getch():
+def getch1():
     try:
         tty.setraw(sys.stdin.fileno())
         ch = sys.stdin.read(1)
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
+
+def getch():
+    tty.setraw(sys.stdin.fileno())
+    ch = sys.stdin.read(1)
+    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
 
 
@@ -165,6 +171,20 @@ def ax12_read_present_position(pa_h, po_h, id, config):
     print("[ID:%03d] PresentPos:%03d" % (id, dxl_present_position))
     config['DAX_ID_' + str(id) + '_GOAL'] = dxl_present_position
     
+    
+def ax12_read_present_load(pa_h, po_h, id, config):
+    dxl_present_torque, dxl_comm_result, dxl_error = pa_h.read2ByteTxRx(po_h, id, config['ADDR_AX_PRESENT_LOAD'])
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("%s" % pa_h.getRxPacketError(dxl_error))
+    
+#         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_torque))
+#         DXL_ID_PRESENT_TORQUE = dxl_present_torque
+    print("[ID:%03d] PresLoad:%s" % (id, dxl_present_torque))
+    
+    return dxl_present_torque
+    
 
 def ax12_write_torque_limit(pa_h, po_h, id, config):
     dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_TORQUE_LIMIT'], config['DAX_ID_' + str(id) + '_TORQUE_LIMIT'])
@@ -222,11 +242,13 @@ def check_torque_limit(id, DXL_ID_GOAL, turn_cw, pa_h, po_h, config):
     
     while do_work:
         # Read present load
-        dxl_present_torque, dxl_comm_result, dxl_error = pa_h.read2ByteTxRx(po_h, id, config['ADDR_AX_PRESENT_LOAD'])
-        if dxl_comm_result != COMM_SUCCESS:
-            print("%s" % pa_h.getTxRxResult(dxl_comm_result))
-        elif dxl_error != 0:
-            print("%s" % pa_h.getRxPacketError(dxl_error))
+        dxl_present_torque = ax12_read_present_load(pa_h, po_h, id, config)
+        
+#         dxl_present_torque, dxl_comm_result, dxl_error = pa_h.read2ByteTxRx(po_h, id, config['ADDR_AX_PRESENT_LOAD'])
+#         if dxl_comm_result != COMM_SUCCESS:
+#             print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+#         elif dxl_error != 0:
+#             print("%s" % pa_h.getRxPacketError(dxl_error))
         
 #         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_torque))
 #         DXL_ID_PRESENT_TORQUE = dxl_present_torque
@@ -242,11 +264,13 @@ def check_torque_limit(id, DXL_ID_GOAL, turn_cw, pa_h, po_h, config):
                 config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] + 2
                 
             # Write goal position
-            dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_GOAL_POSITION'], config['DAX_ID_' + str(id) + '_GOAL'])
-            if dxl_comm_result != COMM_SUCCESS:
-                print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
-            elif dxl_error != 0:
-                print("id %s" % pa_h.getRxPacketError(dxl_error))
+            ax12_write_goal_position(pa_h, po_h, id, config)
+            
+#             dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_GOAL_POSITION'], config['DAX_ID_' + str(id) + '_GOAL'])
+#             if dxl_comm_result != COMM_SUCCESS:
+#                 print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
+#             elif dxl_error != 0:
+#                 print("id %s" % pa_h.getRxPacketError(dxl_error))
                 
         else:
             do_work = False
@@ -257,11 +281,13 @@ def check_torque_limit_2(id, DXL_ID_GOAL, turn_cw, pa_h, po_h, config):
     
     while do_work:
         # Read present load
-        dxl_present_torque, dxl_comm_result, dxl_error = pa_h.read2ByteTxRx(po_h, id, config['ADDR_AX_PRESENT_LOAD'])
-        if dxl_comm_result != COMM_SUCCESS:
-            print("%s" % pa_h.getTxRxResult(dxl_comm_result))
-        elif dxl_error != 0:
-            print("%s" % pa_h.getRxPacketError(dxl_error))
+        dxl_present_torque = ax12_read_present_load(pa_h, po_h, id, config)
+        
+#         dxl_present_torque, dxl_comm_result, dxl_error = pa_h.read2ByteTxRx(po_h, id, config['ADDR_AX_PRESENT_LOAD'])
+#         if dxl_comm_result != COMM_SUCCESS:
+#             print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+#         elif dxl_error != 0:
+#             print("%s" % pa_h.getRxPacketError(dxl_error))
         
 #         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_torque))
 #         DXL_ID_PRESENT_TORQUE = dxl_present_torque
@@ -299,25 +325,87 @@ def check_torque_limit_2(id, DXL_ID_GOAL, turn_cw, pa_h, po_h, config):
               
         else:
             do_work = False
+            
+            
+def check_torque_limit_3(id, DXL_ID_GOAL, turn_cw, pa_h, po_h, config):
+    do_work = True
+    
+    while do_work:
+        # we pull a little bit so that ax12a servo can "build-up" a torque value, then Write goal position
+        if id == 1 or id == 3 or id == 5 or id == 7:
+           config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] - 2
+        else:
+            config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] + 2
+                        
+        ax12_write_goal_position(pa_h, po_h, id, config)
+        # Read present load
+        dxl_present_torque = ax12_read_present_load(pa_h, po_h, id, config)
+        
+#         dxl_present_torque, dxl_comm_result, dxl_error = pa_h.read2ByteTxRx(po_h, id, config['ADDR_AX_PRESENT_LOAD'])
+#         if dxl_comm_result != COMM_SUCCESS:
+#             print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+#         elif dxl_error != 0:
+#             print("%s" % pa_h.getRxPacketError(dxl_error))
+        
+#         print("[ID:%03d] GoalPos:%03d  PresPos:%03d" % (DXL_ID, dxl_goal_position[index], dxl_present_torque))
+#         DXL_ID_PRESENT_TORQUE = dxl_present_torque
+        print("[ID:%03d] PresLoad:%s" % (id, dxl_present_torque))
+        print("[ID:%03d] Torque-limit:%d" % (id, config['DAX_ID_' + str(id) + '_MOVING_TORQUE_LIMIT']))
+       
+        
+        if dxl_present_torque > config['DAX_ID_' + str(id) + '_MOVING_TORQUE_LIMIT']:
+            ### if cw=clock-wise
+            if turn_cw:
+               config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] - 2
+            else:
+                config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] + 2
+                
+            # Write goal position
+            ax12_write_goal_position(pa_h, po_h, id, config)
+            
+#             dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_GOAL_POSITION'], config['DAX_ID_' + str(id) + '_GOAL'])
+#             if dxl_comm_result != COMM_SUCCESS:
+#                 print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
+#             elif dxl_error != 0:
+#                 print("id %s" % pa_h.getRxPacketError(dxl_error))
+                
+        elif dxl_present_torque < (config['DAX_ID_' + str(id) + '_MOVING_TORQUE_LIMIT'] - 200):
+            ### if cw=clock-wise
+            if turn_cw:
+               config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] + 2
+            else:
+                config['DAX_ID_' + str(id) + '_GOAL'] = config['DAX_ID_' + str(id) + '_GOAL'] - 2
+                
+            # Write goal position
+            ax12_write_goal_position(pa_h, po_h, id, config)
+            
+#             dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_GOAL_POSITION'], config['DAX_ID_' + str(id) + '_GOAL'])
+#             if dxl_comm_result != COMM_SUCCESS:
+#                 print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
+#             elif dxl_error != 0:
+#                 print("id %s" % pa_h.getRxPacketError(dxl_error))
+              
+        else:
+            do_work = False
         
         
 def check_all_torque_limits(dont_check, pa_h, po_h, config):
-    if dont_check is not 1:
-        check_torque_limit_2(config['DAX_ID_1'] , config['DAX_ID_1_GOAL'], False, pa_h, po_h, config)
-    if dont_check is not 2:
-        check_torque_limit_2(config['DAX_ID_2'], config['DAX_ID_2_GOAL'], True, pa_h, po_h, config)
+#     if dont_check is not 1:
+#         check_torque_limit_3(config['DAX_ID_1'] , config['DAX_ID_1_GOAL'], False, pa_h, po_h, config)
+#     if dont_check is not 2:
+#         check_torque_limit_3(config['DAX_ID_2'], config['DAX_ID_2_GOAL'], True, pa_h, po_h, config)
     if dont_check is not 3:
-        check_torque_limit_2(config['DAX_ID_3'], config['DAX_ID_3_GOAL'], False, pa_h, po_h, config)
+        check_torque_limit_3(config['DAX_ID_3'], config['DAX_ID_3_GOAL'], False, pa_h, po_h, config)
     if dont_check is not 4:
-        check_torque_limit_2(config['DAX_ID_4'], config['DAX_ID_4_GOAL'], True, pa_h, po_h, config)
-    if dont_check is not 5:
-        check_torque_limit_2(config['DAX_ID_5'], config['DAX_ID_5_GOAL'], False, pa_h, po_h, config)
-    if dont_check is not 6:
-        check_torque_limit_2(config['DAX_ID_6'], config['DAX_ID_6_GOAL'], True, pa_h, po_h, config)
-    if dont_check is not 7:
-        check_torque_limit_2(config['DAX_ID_7'], config['DAX_ID_7_GOAL'], False, pa_h, po_h, config)
-    if dont_check is not 8:
-        check_torque_limit_2(config['DAX_ID_8'], config['DAX_ID_8_GOAL'], True, pa_h, po_h, config)         
+        check_torque_limit_3(config['DAX_ID_4'], config['DAX_ID_4_GOAL'], True, pa_h, po_h, config)
+#     if dont_check is not 5:
+#         check_torque_limit_3(config['DAX_ID_5'], config['DAX_ID_5_GOAL'], False, pa_h, po_h, config)
+#     if dont_check is not 6:
+#         check_torque_limit_3(config['DAX_ID_6'], config['DAX_ID_6_GOAL'], True, pa_h, po_h, config)
+#     if dont_check is not 7:
+#         check_torque_limit_3(config['DAX_ID_7'], config['DAX_ID_7_GOAL'], False, pa_h, po_h, config)
+#     if dont_check is not 8:
+#         check_torque_limit_3(config['DAX_ID_8'], config['DAX_ID_8_GOAL'], True, pa_h, po_h, config)         
 
 
     
