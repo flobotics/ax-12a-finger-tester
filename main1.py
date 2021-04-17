@@ -59,13 +59,14 @@ def get_config_dict():
     config['ADDR_AX_PUNCH']= 48
     
     
-#     config['ADDR_AX_TORQUE_ENABLE']= 24
-#     config['ADDR_AX_GOAL_POSITION']= 30
-#     config['ADDR_AX_PRESENT_POSITION']= 36
-#     config['ADDR_AX_LED']= 25
-#     config['ADDR_AX_MOVING_SPEED']= 32
-#     config['ADDR_AX_TORQUE_LIMIT']= 34
-#     config['ADDR_AX_PRESENT_LOAD']= 40
+    config['VALUE_AX_MAX_TORQUE_1']= 200
+    config['VALUE_AX_MAX_TORQUE_2']= 200
+    config['VALUE_AX_MAX_TORQUE_3']= 200
+    config['VALUE_AX_MAX_TORQUE_4']= 200
+    config['VALUE_AX_MAX_TORQUE_5']= 200
+    config['VALUE_AX_MAX_TORQUE_6']= 200
+    config['VALUE_AX_MAX_TORQUE_7']= 200
+    config['VALUE_AX_MAX_TORQUE_8']= 200
     
     
     config['PROTOCOL_VERSION']= 1.0
@@ -130,6 +131,8 @@ def get_config_dict():
     
     config['TORQUE_ENABLE']= 1
     config['TORQUE_DISABLE']= 0
+    config['WHEEL_MODE'] = 0
+    config['JOINT_MODE'] = 1023
     
     return config
 
@@ -159,6 +162,8 @@ def ax12_enable_torque(pa_h, po_h, id, config):
         print("%s" % pa_h.getRxPacketError(dxl_error))
     else:
         print("[ID:%03d] Torque:enabled" % (id))
+        
+
         
         
 def ax12_read_present_position(pa_h, po_h, id, config):
@@ -195,6 +200,15 @@ def ax12_write_torque_limit(pa_h, po_h, id, config):
     else:
         print("[ID:%03d] Set Torque Limit:%d" % (id, config['ADDR_AX_TORQUE_LIMIT']))
         
+def ax12_write_ccw_angle_limit(pa_h, po_h, id, config):
+    dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_CCW_ANGLE_LIMIT'], config['WHEEL_MODE'])
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("%s" % pa_h.getRxPacketError(dxl_error))
+    else:
+        print("[ID:%03d] Set Torque Limit:%d" % (id, config['ADDR_AX_TORQUE_LIMIT']))
+        
         
 def ax12_write_goal_position(pa_h, po_h, id, config):
     dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_GOAL_POSITION'], config['DAX_ID_' + str(id) + '_GOAL'])
@@ -202,8 +216,16 @@ def ax12_write_goal_position(pa_h, po_h, id, config):
         print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
     elif dxl_error != 0:
         print("id %s" % pa_h.getRxPacketError(dxl_error))
+      
+ 
+def ax12_write_max_torque(pa_h, po_h, id, config):
+    dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, config['ADDR_AX_MAX_TORQUE'], config['VALUE_AX_MAX_TORQUE_' + str(id)])
+    if dxl_comm_result != COMM_SUCCESS:
+        print("id %s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("id %s" % pa_h.getRxPacketError(dxl_error))
         
-        
+               
 def ax12_write_moving_speed(pa_h, po_h, id, config):
     if id == 1 or id == 2:
         DXA_ID_SPEED = config['DAX_ID_1_2_SPEED']
