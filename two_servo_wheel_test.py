@@ -3,6 +3,7 @@ import sys, tty, termios
 from dynamixel_sdk import *                    # Uses Dynamixel SDK library
 from _ast import Or
 import socket
+import time
 
 fd = sys.stdin.fileno()
 old_settings = termios.tcgetattr(fd)
@@ -262,7 +263,7 @@ def main():
     
     
     
-    for i in range(1,3):
+    for i in range(7,9):
         ax12_write_ccw_angle_limit(packetHandler, portHandler, i, config['WHEEL_MODE'], config)
         ax12_enable_torque(packetHandler, portHandler, i, config)
         ax12_write_torque_limit(packetHandler, portHandler, i, config)
@@ -279,26 +280,36 @@ def main():
         elif keychar == 'q' or keychar == 'e' or keychar == 't' or keychar == 'u':
             print('found q----------servo1-up  servo2-down %d' % i)
             
-            ctrl = True
-            while ctrl:
-                c.send(b'go') 
+            ctrl7 = True
+            ctrl8 = True
+            while (ctrl7 or ctrl8):
+                print('c7 %d' % ctrl7)
+                print('c8 %d' % ctrl8)
+               
+                
+                c.send(b'get7') 
                 data = c.recv(8)
-                print('data %f' % float(data))
+                print('data7 %f' % float(data))
                 if(float(data) > 0.010000):
-                    ax12_write_moving_speed(packetHandler, portHandler, config['DAX_ID_2'], 0, config)
-                    ctrl = False
+                    ax12_write_moving_speed(packetHandler, portHandler, config['DAX_ID_7'], 0, config)
+                    ctrl7 = False
                 else:
-                    ax12_write_moving_speed(packetHandler, portHandler, config['DAX_ID_2'], 1150, config)
-#             
-#             for j in range(0,10):
-#                 l2 = ax12_read_present_load(packetHandler, portHandler, config['DAX_ID_2'], config)
-#                 l1 = ax12_read_present_load(packetHandler, portHandler, config['DAX_ID_1'], config)
-#                 
-#                 if l1 > 500 or l2 > 500:
-#                     ax12_write_moving_speed(packetHandler, portHandler, config['DAX_ID_2'], 0, config)
-#             ax12_read_present_position(packetHandler, portHandler, config['DAX_ID_2'], config)
-#             config['DAX_ID_2_GOAL'] = config['DAX_ID_2_GOAL'] + 10
-#             ax12_write_goal_position(packetHandler, portHandler, config['DAX_ID_2'], config)
+                    ax12_write_moving_speed(packetHandler, portHandler, config['DAX_ID_7'], 100, config)
+
+                c.send(b'get8') 
+                data = c.recv(8)
+                print('data8 %f' % float(data))
+                if(float(data) > 0.010000):
+                    ax12_write_moving_speed(packetHandler, portHandler, config['DAX_ID_8'], 1024, config)
+                    ctrl8 = False
+                else:
+                    ax12_write_moving_speed(packetHandler, portHandler, config['DAX_ID_8'], 1123, config)
+                    
+                
+                    
+                time.sleep(0.1)
+                
+            print('end q');
 
         elif keychar == 'w' or keychar == 'r' or keychar == 'z' or keychar == 'i':
             print('found w----------servo1-up  servo2-down %d' % i)
