@@ -277,8 +277,8 @@ def main():
         keychar = getch1()
         if keychar == chr(0x1b):
             break
-        elif keychar == 'q' or keychar == 'e' or keychar == 't' or keychar == 'u':
-            print('found q----------servo1-up  servo2-down %d' % i)
+        elif keychar == 'o':
+            print('found o----------servo7-8 setup %d' % i)
             
             ctrl7 = True
             ctrl8 = True
@@ -309,7 +309,7 @@ def main():
                     
                 time.sleep(0.1)
                 
-            print('end q');
+            print('end o');
 
         elif keychar == 'w' or keychar == 'r' or keychar == 'z' or keychar == 'i':
             print('found w----------servo1-up  servo2-down %d' % i)
