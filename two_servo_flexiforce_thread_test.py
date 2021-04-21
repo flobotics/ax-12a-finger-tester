@@ -69,13 +69,7 @@ class MyThread(threading.Thread):
                             print("%s" % pa_h.getTxRxResult(dxl_comm_result))
                         elif dxl_error != 0:
                             print("%s" % pa_h.getRxPacketError(dxl_error))
-                else:
-                    # Write speed
-                    dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, self.id, self.addr_ax_moving_speed, 0)
-                    if dxl_comm_result != COMM_SUCCESS:
-                        print("%s" % pa_h.getTxRxResult(dxl_comm_result))
-                    elif dxl_error != 0:
-                        print("%s" % pa_h.getRxPacketError(dxl_error))
+
                     
                     
                 pass
@@ -86,6 +80,7 @@ class MyThread(threading.Thread):
                     print("servo1")
                     if int(vals[1]) == 0 or int(vals[1]) == 1023:
                         self.connected_servo_moving = False
+                        self.releasing = True
                     else:
                         self.connected_servo_moving = True
                         
