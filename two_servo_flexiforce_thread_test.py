@@ -13,9 +13,9 @@ from dynamixel_sdk import *
 # import time
 
 
-print_lock = threading.Lock()
+write_lock = threading.Lock()
 
-class MyThread(threading.Thread):
+class MyThread1(threading.Thread):
     def __init__(self, queue, args=(), kwargs=None):
         threading.Thread.__init__(self, args=(), kwargs=None)
         self.queue = queue
@@ -34,7 +34,7 @@ class MyThread(threading.Thread):
             self.partner_servo_id = 1
         self.releasing = False
         self.partner_servo_moving = False
-        self.connected_servo_speed = 0
+        self.partner_servo_speed = 0
         
         ##id  flexi-socket  pa po
         
@@ -52,7 +52,7 @@ class MyThread(threading.Thread):
                 # if value absolut too high -> release
                 idStr = str(self.id)
                 getStr = 'get' + idStr
-                with print_lock:
+                with write_lock:
                     self.flexiforceSocket.send(getStr.encode('ascii')) 
                     data = self.flexiforceSocket.recv(8)
 #                     print('data %f' % float(data))
@@ -62,7 +62,7 @@ class MyThread(threading.Thread):
                     print('data>0.2 %f' % float(data))
                     self.releasing = True
                     # Write speed
-                    with print_lock:
+                    with write_lock:
                         dxl_comm_result, dxl_error = self.pa_h.write2ByteTxRx(self.po_h, int(self.id), int(self.addr_ax_moving_speed), int(self.servo_release_speed))
                         if dxl_comm_result != COMM_SUCCESS:
                             print("%s" % self.pa_h.getTxRxResult(dxl_comm_result))
@@ -72,7 +72,7 @@ class MyThread(threading.Thread):
                     print('data-releasing %f' % float(data))
                     self.releasing = False
                     # Write speed
-                    with print_lock:
+                    with write_lock:
                         dxl_comm_result, dxl_error = self.pa_h.write2ByteTxRx(self.po_h, int(self.id), int(self.addr_ax_moving_speed), 0)
                         if dxl_comm_result != COMM_SUCCESS:
                             print("%s" % self.pa_h.getTxRxResult(dxl_comm_result))
@@ -85,8 +85,8 @@ class MyThread(threading.Thread):
                     if float(data) > 0.03: 
                         print('data-partner-moving %f' % float(data))
                         # Write speed
-                        with print_lock:
-                            dxl_comm_result, dxl_error = self.pa_h.write2ByteTxRx(self.po_h, int(self.id), int(self.addr_ax_moving_speed), int(self.connected_servo_speed))
+                        with write_lock:
+                            dxl_comm_result, dxl_error = self.pa_h.write2ByteTxRx(self.po_h, int(self.id), int(self.addr_ax_moving_speed), int(self.partner_servo_speed))
                             if dxl_comm_result != COMM_SUCCESS:
                                 print("%s" % self.pa_h.getTxRxResult(dxl_comm_result))
                             elif dxl_error != 0:
@@ -107,14 +107,14 @@ class MyThread(threading.Thread):
                         self.partner_servo_moving = True
                         
                     if int(vals[1]) > 1023:
-                        self.connected_servo_speed = int(vals[1]) - 1023
+                        self.partner_servo_speed = int(vals[1]) - 1023
                     else:
-                        self.connected_servo_speed = int(vals[1]) + 1023
+                        self.partner_servo_speed = int(vals[1]) + 1023
                     
                     
                 elif int(vals[0]) == int(self.id):
                     # Write speed
-                    with print_lock:
+                    with write_lock:
                         dxl_comm_result, dxl_error = self.pa_h.write2ByteTxRx(self.po_h, int(self.id), int(self.addr_ax_moving_speed), int(vals[1]))
                         if dxl_comm_result != COMM_SUCCESS:
                             print("%s" % self.pa_h.getTxRxResult(dxl_comm_result))
@@ -125,8 +125,108 @@ class MyThread(threading.Thread):
 
     def do_thing_with_message(self, message):
         if self.receive_messages:
-            with print_lock:
+            with write_lock:
                 print("id:" + threading.currentThread().getName() + " msg:" + message)
+
+
+
+
+class MyThread(threading.Thread):
+    def __init__(self, queue, args=(), kwargs=None):
+        threading.Thread.__init__(self, args=(), kwargs=None)
+        self.queue = queue
+        self.daemon = True
+        self.receive_messages = args[0]
+        self.id = args[0]
+        self.flexiforceSocket = args[1]
+        self.pa_h = args[2]
+        self.po_h = args[3]
+        self.addr_ax_moving_speed = 32
+        if self.id == 1:
+            self.servo_release_speed = 1123
+            self.partner_servo_id = 2
+        elif self.id == 2:
+            self.servo_release_speed = 100
+            self.partner_servo_id = 1
+        self.releasing = False
+        self.partner_servo_moving = False
+        self.partner_servo_speed = 0
+        
+        ##id  flexi-socket  pa po
+        
+
+    def run(self):
+        while True:
+#             print("id:" + threading.currentThread().getName() + " msg:" + str(self.receive_messages))
+#             val = self.queue.get_nowait()
+            try:
+                val = self.queue.get(False)
+            except Empty:
+                # Handle empty queue here
+                # get flexiforce value
+                # if value too high -> stop
+                # if value absolut too high -> release
+                idStr = str(self.id)
+                getStr = 'get' + idStr
+                with write_lock:
+                    self.flexiforceSocket.send(getStr.encode('ascii')) 
+                    data = self.flexiforceSocket.recv(8)
+#                     print('data %f' % float(data))
+#                     print("id:" + threading.currentThread().getName() + " data:" + data.decode('ascii'))
+                #Notstop
+                if float(data) > 0.2:
+                    print('data>0.2 %f' % float(data))
+                    self.releasing = True
+                    
+                    write_moving_speed(self, int(self.servo_release_speed) )
+                    
+                elif self.releasing:
+                    print('data-releasing %f' % float(data))
+                    self.releasing = False
+                   
+                    write_moving_speed(self, 0 )
+                     
+                elif self.partner_servo_moving:
+#                    
+                    if float(data) > 0.03: 
+                        print('data-partner-moving %f' % float(data))
+                        
+                        write_moving_speed(self, int(self.partner_servo_speed) )
+
+                    
+                    
+#                 pass
+            else:
+#                 print("msg recv >" + self.flexiforceSocket + "<")
+                vals = val.split()
+                if int(vals[0]) == self.partner_servo_id:
+#                     print("servo1")
+                    if int(vals[1]) == 0 or int(vals[1]) == 1023:
+                        self.partner_servo_moving = False
+                        self.releasing = True
+                    else:
+                        self.partner_servo_moving = True
+                        
+                    if int(vals[1]) > 1023:
+                        self.partner_servo_speed = int(vals[1]) - 1023
+                    else:
+                        self.partner_servo_speed = int(vals[1]) + 1023
+                    
+                    
+                elif int(vals[0]) == int(self.id):
+                    # Write speed
+                    write_moving_speed(self, int(vals[1]) )
+                
+#                 self.do_thing_with_message(val)
+
+    def write_moving_speed(self, speed):
+        with write_lock:
+            dxl_comm_result, dxl_error = self.pa_h.write2ByteTxRx(self.po_h, int(self.id), int(self.addr_ax_moving_speed), speed)
+            if dxl_comm_result != COMM_SUCCESS:
+                print("%s" % self.pa_h.getTxRxResult(dxl_comm_result))
+            elif dxl_error != 0:
+                print("%s" % self.pa_h.getRxPacketError(dxl_error))
+
 
 
 
