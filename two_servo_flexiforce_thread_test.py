@@ -128,6 +128,46 @@ class MyThread(threading.Thread):
             with print_lock:
                 print("id:" + threading.currentThread().getName() + " msg:" + message)
 
+
+
+def ax12_write_ccw_angle_limit(pa_h, po_h, id, limit):
+    dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, 8, limit)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("%s" % pa_h.getRxPacketError(dxl_error))
+    else:
+        print("[ID:%03d] Set Torque Limit:%d" % (id, 999))
+
+
+def ax12_enable_torque(pa_h, po_h, id):
+    dxl_comm_result, dxl_error = pa_h.write1ByteTxRx(po_h, id, 24, 1)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("enable-torque %s" % pa_h.getRxPacketError(dxl_error))
+    else:
+        print("[ID:%03d] Torque:enabled" % (id))
+        
+def ax12_write_torque_limit(pa_h, po_h, id):
+    dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, 34, 400)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("torque-limit %s" % pa_h.getRxPacketError(dxl_error))
+    else:
+        print("[ID:%03d] Set Torque Limit:%d" % (id, 34))
+        
+        
+def ax12_write_max_torque(pa_h, po_h, id):
+    dxl_comm_result, dxl_error = pa_h.write2ByteTxRx(po_h, id, 14, 1023)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("write-max-torque res %s" % pa_h.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("write-max-torque err %s" % pa_h.getRxPacketError(dxl_error))
+        
+                                
+        
 if __name__ == '__main__':
     threads = []
 #     tqueues = []
@@ -139,15 +179,27 @@ if __name__ == '__main__':
     c, addr = s.accept()
     
     portHandler = PortHandler("/dev/ttyUSB0")
-    packetHandler = PacketHandler("1.0")
+    
     if portHandler.openPort():
         print("open port ok")
     else:
         print("open port failed")
+        
+    packetHandler = PacketHandler(1.0)
+
+    
 #     open_port(portHandler)
     
 #     set_port_baudrate(portHandler, config)
     portHandler.setBaudRate(1000000)
+    
+    for i in range(1,3):
+        ax12_write_ccw_angle_limit(packetHandler, portHandler, i, 0)
+        ax12_enable_torque(packetHandler, portHandler, i)
+        ax12_write_torque_limit(packetHandler, portHandler, i)
+        ax12_write_max_torque(packetHandler, portHandler, i)
+        
+        
     
     for t in range(2):
         q = Queue()
@@ -166,7 +218,7 @@ if __name__ == '__main__':
     
 
     while True:
-        inp = input("type id speed:")
+        inp = input("type >id speed<")
 
         for t in threads:
             t.queue.put(inp)
