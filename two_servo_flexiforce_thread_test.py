@@ -143,10 +143,10 @@ class MyThread(threading.Thread):
         self.po_h = args[3]
         self.addr_ax_moving_speed = 32
         if self.id == 1:
-            self.servo_release_speed = 1123
+            self.servo_release_speed = 100
             self.partner_servo_id = 2
         elif self.id == 2:
-            self.servo_release_speed = 100
+            self.servo_release_speed = 1123
             self.partner_servo_id = 1
         self.releasing = False
         self.partner_servo_moving = False
@@ -174,24 +174,29 @@ class MyThread(threading.Thread):
 #                     print('data %f' % float(data))
 #                     print("id:" + threading.currentThread().getName() + " data:" + data.decode('ascii'))
                 #Notstop
-                if float(data) > 0.2:
-                    print('data>0.2 %f' % float(data))
+                if float(data) > 0.4:
+#                     print('data>0.2 %f' % float(data))
+#                     print("data>0.2 id:" + threading.currentThread().getName() + " data:" + data.decode('ascii'))
                     self.releasing = True
                     
-                    write_moving_speed(self, int(self.servo_release_speed) )
+                    self.write_moving_speed(int(self.servo_release_speed) )
                     
                 elif self.releasing:
-                    print('data-releasing %f' % float(data))
+#                     print('data-releasing %f' % float(data))
+#                     print("rel id:" + threading.currentThread().getName() + " data:" + data.decode('ascii'))
                     self.releasing = False
                    
-                    write_moving_speed(self, 0 )
+                    self.write_moving_speed(0 )
                      
                 elif self.partner_servo_moving:
 #                    
-                    if float(data) > 0.03: 
-                        print('data-partner-moving %f' % float(data))
+                    if float(data) > 0.03:
+#                         print("part id:" + threading.currentThread().getName() + " data:" + data.decode('ascii'))
+#                         print('data-partner-moving %f' % float(data))
                         
-                        write_moving_speed(self, int(self.partner_servo_speed) )
+                        self.write_moving_speed(int(self.partner_servo_speed) )
+                    else:
+                        self.write_moving_speed(0 )
 
                     
                     
@@ -207,15 +212,16 @@ class MyThread(threading.Thread):
                     else:
                         self.partner_servo_moving = True
                         
-                    if int(vals[1]) > 1023:
-                        self.partner_servo_speed = int(vals[1]) - 1023
-                    else:
-                        self.partner_servo_speed = int(vals[1]) + 1023
+#                     if int(vals[1]) > 1023:
+#                         self.partner_servo_speed = int(vals[1]) - 1023
+#                     else:
+#                         self.partner_servo_speed = int(vals[1]) + 1023
                     
+                    self.partner_servo_speed = int(vals[1])
                     
                 elif int(vals[0]) == int(self.id):
                     # Write speed
-                    write_moving_speed(self, int(vals[1]) )
+                    self.write_moving_speed(int(vals[1]) )
                 
 #                 self.do_thing_with_message(val)
 
