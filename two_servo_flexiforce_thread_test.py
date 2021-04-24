@@ -4,6 +4,11 @@ from queue import Queue
 from queue import Empty
 import socket
 from dynamixel_sdk import *
+import sys
+import sys, tty, termios
+
+fd = sys.stdin.fileno()
+old_settings = termios.tcgetattr(fd)
 
 # import sys
 # import sys, tty, termios
@@ -136,7 +141,7 @@ class MyThread(threading.Thread):
         threading.Thread.__init__(self, args=(), kwargs=None)
         self.queue = queue
         self.daemon = True
-        self.receive_messages = args[0]
+#         self.receive_messages = args[0]
         self.id = args[0]
         self.flexiforceSocket = args[1]
         self.pa_h = args[2]
@@ -148,6 +153,26 @@ class MyThread(threading.Thread):
         elif self.id == 2:
             self.servo_release_speed = 1123
             self.partner_servo_id = 1
+        elif self.id == 3:
+            self.servo_release_speed = 100
+            self.partner_servo_id = 4
+        elif self.id == 4:
+            self.servo_release_speed = 1123
+            self.partner_servo_id = 3
+        elif self.id == 5:
+            self.servo_release_speed = 100
+            self.partner_servo_id = 6
+        elif self.id == 6:
+            self.servo_release_speed = 1123
+            self.partner_servo_id = 5
+        elif self.id == 7:
+            self.servo_release_speed = 100
+            self.partner_servo_id = 8
+        elif self.id == 8:
+            self.servo_release_speed = 1123
+            self.partner_servo_id = 7
+            
+            
         self.releasing = False
         self.partner_servo_moving = False
         self.partner_servo_speed = 0
@@ -272,6 +297,12 @@ def ax12_write_max_torque(pa_h, po_h, id):
     elif dxl_error != 0:
         print("write-max-torque err %s" % pa_h.getRxPacketError(dxl_error))
         
+        
+def getch1():
+    tty.setraw(sys.stdin.fileno())
+    ch = sys.stdin.read(1)
+    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
                                 
         
 if __name__ == '__main__':
@@ -299,7 +330,7 @@ if __name__ == '__main__':
 #     set_port_baudrate(portHandler, config)
     portHandler.setBaudRate(1000000)
     
-    for i in range(1,3):
+    for i in range(1,9):
         ax12_write_ccw_angle_limit(packetHandler, portHandler, i, 0)
         ax12_enable_torque(packetHandler, portHandler, i)
         ax12_write_torque_limit(packetHandler, portHandler, i)
@@ -307,7 +338,7 @@ if __name__ == '__main__':
         
         
     
-    for t in range(2):
+    for t in range(8):
         q = Queue()
 #         tqueues.append(Queue())
         
@@ -321,17 +352,195 @@ if __name__ == '__main__':
 #         t.queue.put("1 234")
 #         tqueues[t].queue.put("Print this!")
 
+    while 1:
+#         print("Press any key to continue! (or press ESC to quit!)")
+    #     if isData():
+    #         c = sys.stdin.read(1)
+        keychar = getch1()
+        if keychar == chr(0x1b):
+            break
+        elif keychar == 'q':
+            inp = "2 100"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'a':
+            inp = "2 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'w':
+            inp = "1 1123"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 's':
+            inp = "1 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'y':
+            inp = "1 1123"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "2 100"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "1 0"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "2 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'x':
+            inp = "1 100"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "2 1123"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "1 0"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "2 0"
+            for t in threads:
+                t.queue.put(inp)
+                
+        elif keychar == 'e':
+            inp = "4 100"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'd':
+            inp = "4 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'r':
+            inp = "3 1123"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'f':
+            inp = "3 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'c':
+            inp = "3 1123"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "4 100"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "3 0"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "4 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'v':
+            inp = "3 100"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "4 1123"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "3 0"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "4 0"
+            for t in threads:
+                t.queue.put(inp)
+                
+        elif keychar == 't':
+            inp = "6 100"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'g':
+            inp = "6 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'z':
+            inp = "5 1123"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'h':
+            inp = "5 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'b':
+            inp = "5 1123"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "6 100"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "5 0"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "6 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'n':
+            inp = "5 100"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "6 1123"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "5 0"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "6 0"
+            for t in threads:
+                t.queue.put(inp)
+                
+        elif keychar == 'u':
+            inp = "8 100"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'j':
+            inp = "8 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'i':
+            inp = "7 1123"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'k':
+            inp = "7 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == 'm':
+            inp = "7 1123"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "8 100"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "7 0"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "8 0"
+            for t in threads:
+                t.queue.put(inp)
+        elif keychar == ',':
+            inp = "7 100"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "8 1123"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "7 0"
+            for t in threads:
+                t.queue.put(inp)
+            inp = "8 0"
+            for t in threads:
+                t.queue.put(inp)
+            
+# 
+#     while True:
+#         inp = input("type >id speed<")
+# 
+#         for t in threads:
+#             t.queue.put(inp)
+
     
-
-    while True:
-        inp = input("type >id speed<")
-
-        for t in threads:
-            t.queue.put(inp)
-
-    
-    for t in threads:
-        t.join()
+#     for t in threads:
+#         t.join()
         
         
         
