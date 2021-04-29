@@ -63,7 +63,7 @@ class MyThread1(threading.Thread):
 #                     print('data %f' % float(data))
 #                     print("id:" + threading.currentThread().getName() + " data:" + data.decode('ascii'))
                 #Notstop
-                if float(data) > 0.2:
+                if float(data) > 0.5:
                     print('data>0.2 %f' % float(data))
                     self.releasing = True
                     # Write speed
